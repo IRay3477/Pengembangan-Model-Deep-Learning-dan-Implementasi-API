@@ -1,0 +1,8 @@
+torch
+transformers
+sentencepiece
+sacremoses
+scikit-learn
+pandas
+matplotlib
+rouge-score

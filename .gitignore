@@ -1,0 +1,18 @@
+# Python cache & virtualenv
+__pycache__/
+*.py[cod]
+venv/
+env/
+
+# Data & checkpoints (jangan di-push karena melebihi batas 100 MB)
+Dataset/
+*.csv
+*.xlsx
+checkpoints/
+*.pt
+*.bin
+*.safetensors
+
+# Output gambar / cache Colab
+*.png
+.ipynb_checkpoints/
