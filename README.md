@@ -70,7 +70,7 @@ Zero-shot memakai `cahya/t5-base-indonesian-summarization-cased` (dilatih pada b
 
 | Model | Parameter | VRAM puncak | Menit/epoch | ROUGE-1 | ROUGE-2 | ROUGE-L |
 |---|---|---|---|---|---|---|
-| `google/mt5-base` | 582 jt | 7,8 GB | 2,83 | 22,37 | 7,24 | 14,87 |
+| `cahya/t5-base-indonesian-summarization-cased` | 222.90 jt | 2.12 GB | 1.78 | 32.44 | 12.54 | 21.49 |
 | `facebook/mbart-large-50` | 611 jt | 8,5 GB | 1,28 | 32,35 | 12,94 | 21,48 |
 | **`indobenchmark/indobart-v2`** | **132 jt** | **2,7 GB** | **0,41** | **33,87** | 12,31 | **21,81** |
 
