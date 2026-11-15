@@ -19,7 +19,7 @@ Tugas 2 Mata Kuliah **Deep Learning** — Program Studi Teknologi Informasi, Uni
 | 2 | Cleaning, penggabungan Part I/II, split 80/10/10 per grup topik | ✅ Selesai |
 | 3 | Translasi penuh EN → ID (NLLB-200) + kontrol kualitas | ✅ Selesai |
 | 4 | Evaluasi ROUGE + 3 baseline + truncation vs chunk-and-summarize | ✅ Selesai |
-| 5 | Seleksi model utama (mT5-base, mBART-50, IndoBART-v2) | ✅ Selesai → **IndoBART-v2** |
+| 5 | Seleksi model utama (T5-base few-shot, mBART-50, IndoBART-v2) | ✅ Selesai → **IndoBART-v2** |
 | 6 | Fine-tuning penuh IndoBART-v2 | ⏳ Berikutnya |
 | 7 | Evaluasi akhir di set test + error analysis | ⏳ Rencana |
 | 8 | REST API FastAPI (`POST /summarize`) + uji Postman | ⏳ Rencana |
