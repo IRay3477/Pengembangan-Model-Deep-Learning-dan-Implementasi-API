@@ -1,8 +1,14 @@
 # Peringkasan Otomatis Transkrip Video Kuliah Berbahasa Indonesia
 
-Peringkasan **abstraktif** transkrip video kuliah berbahasa Indonesia dengan **fine-tuning model Transformer seq2seq**. Model berjalan mandiri tanpa layanan AI pihak ketiga dan nantinya dilayani lewat REST API (FastAPI).
+> Peringkasan **abstraktif** transkrip video kuliah berbahasa Indonesia dengan **fine-tuning model Transformer seq2seq (IndoBART-v2)**. Model berjalan mandiri tanpa layanan AI pihak ketiga, dan nantinya dilayani lewat REST API FastAPI.
 
-Tugas 2 Mata Kuliah **Deep Learning** — Program Studi Teknologi Informasi, Universitas Udayana.
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)
+![Transformers](https://img.shields.io/badge/🤗%20Transformers-5.x-FFD21E)
+![Colab](https://img.shields.io/badge/Google%20Colab-T4%20GPU-F9AB00?logo=googlecolab&logoColor=white)
+![Status](https://img.shields.io/badge/status-Tahap%207%20berjalan-blue)
+
+Tugas 2 Mata Kuliah **Deep Learning**, Program Studi Teknologi Informasi, Universitas Udayana.
 
 **Kelompok 6**
 - I Made Ray Adhya Khrisna
@@ -11,29 +17,86 @@ Tugas 2 Mata Kuliah **Deep Learning** — Program Studi Teknologi Informasi, Uni
 
 ---
 
+## Daftar Isi
+
+- [Ringkasan Proyek](#ringkasan-proyek)
+- [Status Progres](#status-progres)
+- [Dataset](#dataset)
+- [Alur Pipeline](#alur-pipeline)
+- [Hasil](#hasil)
+- [Struktur Repository](#struktur-repository)
+- [Cara Menjalankan](#cara-menjalankan)
+- [Catatan Teknis](#catatan-teknis)
+- [Keterbatasan](#keterbatasan)
+- [Rencana Berikutnya](#rencana-berikutnya)
+
+---
+
+## Ringkasan Proyek
+
+| | |
+|---|---|
+| **Masalah** | Transkrip kuliah panjang (median ±1.000 kata) dan bergaya lisan, sehingga sulit dibaca ulang dengan cepat |
+| **Pendekatan** | Fine-tuning model seq2seq berbahasa Indonesia untuk menghasilkan ringkasan bergaya tulisan formal |
+| **Model utama** | [`indobenchmark/indobart-v2`](https://huggingface.co/indobenchmark/indobart-v2) (132 juta parameter) |
+| **Evaluasi** | ROUGE-1 / ROUGE-2 / ROUGE-L (F1), dibandingkan dengan 3 baseline |
+| **Input panjang** | Truncation vs chunk-and-summarize |
+| **Deployment** | FastAPI `POST /summarize`, diuji dengan Postman |
+
+**Hasil sementara (set val, 175 video):** model final mencapai **ROUGE-1 43,35 / ROUGE-2 16,42 / ROUGE-L 25,08** dengan panjang ringkasan ±116 kata (referensi ±121 kata). Skor resmi di set test menyusul di Tahap 7.
+
+---
+
 ## Status Progres
 
 | Tahap | Isi | Status |
-|---|---|---|
-| 1 | Profiling dataset + uji 3 model translasi EN → ID | ✅ Selesai |
-| 2 | Cleaning, penggabungan Part I/II, split 80/10/10 per grup topik | ✅ Selesai |
-| 3 | Translasi penuh EN → ID (NLLB-200) + kontrol kualitas | ✅ Selesai |
-| 4 | Evaluasi ROUGE + 3 baseline + truncation vs chunk-and-summarize | ✅ Selesai |
-| 5 | Seleksi model utama (T5-base few-shot, mBART-50, IndoBART-v2) | ✅ Selesai → **IndoBART-v2** |
-| 6 | Fine-tuning penuh IndoBART-v2 | ⏳ Berikutnya |
-| 7 | Evaluasi akhir di set test + error analysis | ⏳ Rencana |
+|:---:|---|:---:|
+| 1 | Profiling dataset + uji 3 model translasi EN → ID | ✅ |
+| 2 | Cleaning, penggabungan Part I/II, split 80/10/10 per grup topik | ✅ |
+| 3 | Translasi penuh EN → ID (NLLB-200) + kontrol kualitas | ✅ |
+| 4 | Evaluasi ROUGE + 3 baseline + truncation vs chunk-and-summarize | ✅ |
+| 5 | Seleksi model utama (T5-base few-shot, mBART-50, IndoBART-v2) | ✅ → **IndoBART-v2** |
+| 6 | Fine-tuning penuh IndoBART-v2 (4 konfigurasi + pengaturan panjang ringkasan) | ✅ |
+| 7 | Evaluasi akhir di set test + error analysis | ⏳ Berikutnya |
 | 8 | REST API FastAPI (`POST /summarize`) + uji Postman | ⏳ Rencana |
+| 9 | Laporan, slide, dan rilis bobot model | ⏳ Rencana |
 
 ---
 
 ## Dataset
 
-- **Sumber:** `ak_lectures_summarized.csv`, subset AK Lectures dari dataset **SSLectures** (pasangan transkrip kuliah dan ringkasannya, berbahasa Inggris).
+- **Sumber:** `ak_lectures_summarized.csv`, subset AK Lectures dari dataset **SSLectures** (pasangan transkrip kuliah dan ringkasannya dalam bahasa Inggris).
 - **Isi:** 1.871 video dari 6 mata kuliah (Classical physics, Organic chemistry, Biochemistry, Biology, Modern physics, General chemistry).
-- **Setelah cleaning:** 1.749 pasangan → **train 1.399 / val 175 / test 175**.
+- **Setelah cleaning:** 1.749 pasangan, dibagi menjadi **train 1.399 / val 175 / test 175**.
 - Data **tidak disertakan** di repo (lihat `.gitignore`). Letakkan file CSV di Google Drive sesuai bagian [Cara Menjalankan](#cara-menjalankan).
 
-### Alur pengolahan data
+| Statistik (setelah translasi) | Nilai |
+|---|---|
+| Median panjang transkrip | 1.458 token |
+| Transkrip lebih panjang dari 512 token | **99%** |
+| Median panjang ringkasan | 189 token (±121 kata) |
+| Ringkasan yang muat dalam 512 token | 97,7% |
+
+Karena hampir semua transkrip melebihi 512 token, strategi input panjang (truncation vs chunk-and-summarize) menjadi salah satu fokus evaluasi.
+
+---
+
+## Alur Pipeline
+
+```mermaid
+flowchart LR
+    A["Dataset SSLectures<br/>1.871 video (EN)"] --> B["Cleaning<br/>+ gabung Part I/II"]
+    B --> C["Split per grup topik<br/>1.399 / 175 / 175"]
+    C --> D["Translasi EN → ID<br/>NLLB-200"]
+    D --> E["Baseline<br/>Lead-k, TextRank, zero-shot"]
+    D --> F["Seleksi model<br/>T5 / mBART / IndoBART"]
+    F --> G["Fine-tuning penuh<br/>IndoBART-v2"]
+    E --> H["Evaluasi test<br/>+ error analysis"]
+    G --> H
+    G --> I["API FastAPI<br/>POST /summarize"]
+```
+
+### Cleaning data
 
 ```
 1.871 data awal
@@ -42,41 +105,86 @@ Tugas 2 Mata Kuliah **Deep Learning** — Program Studi Teknologi Informasi, Uni
   → 1.759  buang anomali (ringkasan < 20 kata / lebih panjang dari transkrip)
   → 1.749  buang ringkasan kembar beda topik
   → split per grup topik (GroupShuffleSplit, seed 42), irisan antar split = 0
-  → translasi EN → ID per kalimat dengan NLLB-200 (distilled 600M)
 ```
 
-Kontrol kualitas translasi: 0 baris gagal, sisa kata Inggris 0,02 per transkrip, 1 kasus halusinasi (repetition loop) diterjemahkan ulang, dan 3 istilah dikoreksi (*ceramah → kuliah*, *lapisan kuman → lapisan germinal*, *konstan gravitasi → konstanta gravitasi*).
+Split dilakukan **per grup topik** supaya Part I dan Part II dari video yang sama tidak terpisah ke train dan test (mencegah kebocoran data).
 
-Setelah translasi, **99%** transkrip lebih panjang dari 512 token (median 1.458 token mT5), sedangkan 97,7% ringkasan muat dalam 512 token.
+### Translasi EN → ID
+
+Tiga model translasi diuji pada 60 sampel yang sama. **NLLB-200 (distilled 600M)** dipilih karena satu-satunya yang bersih di ketiga indikator:
+
+| Model | Artefak spasi | Kata Melayu | Sisa kata Inggris |
+|---|:---:|:---:|:---:|
+| opus-mt-en-id | 37 | 0 | 6 |
+| m2m100_418M | 4 | 16 | 1 |
+| **nllb-200-distilled-600M** | **4** | **0** | **1** |
+
+Kontrol kualitas translasi penuh: 0 baris gagal, sisa kata Inggris 0,02 per transkrip, 1 kasus halusinasi (repetition loop) diterjemahkan ulang, dan 3 istilah dikoreksi (*ceramah → kuliah*, *lapisan kuman → lapisan germinal*, *konstan gravitasi → konstanta gravitasi*).
 
 ---
 
-## Hasil Sementara
+## Hasil
 
-### Baseline (set test, 175 video)
+Semua skor adalah **ROUGE F1** dengan stemmer dimatikan, karena stemmer bawaan library hanya untuk bahasa Inggris.
 
-ROUGE-1/2/L F1, stemmer dimatikan (stemmer bawaan library hanya untuk bahasa Inggris).
+### 1. Baseline (set test, 175 video)
 
 | Metode | ROUGE-1 | ROUGE-2 | ROUGE-L | Panjang |
-|---|---|---|---|---|
+|---|:---:|:---:|:---:|:---:|
 | **Lead-7** | **37,66** | **13,52** | **21,79** | 127 kata |
 | TextRank-5 | 34,65 | 10,58 | 19,32 | 171 kata |
 | Zero-shot T5 (truncation) | 27,60 | 9,94 | 18,07 | 45 kata |
 | Zero-shot T5 (chunk-and-summarize) | 28,31 | 9,94 | 18,21 | 49 kata |
 
-Zero-shot memakai `cahya/t5-base-indonesian-summarization-cased` (dilatih pada berita) tanpa fine-tuning. Nilai k untuk Lead-k dan TextRank dipilih di set val.
+- Nilai k untuk Lead-k dan TextRank dipilih di set val.
+- Zero-shot memakai `cahya/t5-base-indonesian-summarization-cased` (dilatih pada berita) tanpa fine-tuning. Skornya rendah karena ringkasannya terlalu pendek dan masih bergaya lisan, yang menunjukkan ketidakcocokan domain berita vs kuliah.
+- Lead-7 kuat karena ringkasan referensi cenderung mengikuti **bagian awal** kuliah.
 
-### Seleksi model utama (subset 300 data train × 2 epoch, evaluasi di set val)
+### 2. Seleksi model utama (300 data train, ROUGE di 50 video val)
 
-| Model | Parameter | VRAM puncak | Menit/epoch | ROUGE-1 | ROUGE-2 | ROUGE-L |
-|---|---|---|---|---|---|---|
-| `cahya/t5-base-indonesian-summarization-cased` | 222.90 jt | 2.12 GB | 1.78 | 32.44 | 12.54 | 21.49 |
-| `facebook/mbart-large-50` | 611 jt | 8,5 GB | 1,28 | 32,35 | 12,94 | 21,48 |
-| **`indobenchmark/indobart-v2`** | **132 jt** | **2,7 GB** | **0,41** | **33,87** | 12,31 | **21,81** |
+| Model | Parameter | VRAM puncak | Menit/epoch | ROUGE-1 (2 ep) | ROUGE-1 (5 ep) | ROUGE-2 (5 ep) | ROUGE-L (5 ep) |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| T5-base few-shot<br/>`cahya/t5-base-indonesian-summarization-cased` | 223 jt | 2,1 GB | 1,55–1,78 | 32,44 | 33,23 | 12,48 | 21,65 |
+| mBART-50<br/>`facebook/mbart-large-50` | 611 jt | 7,3–8,5 GB | 1,18–1,28 | 32,35 | 35,03 | 12,23 | 21,42 |
+| **IndoBART-v2**<br/>`indobenchmark/indobart-v2` | **132 jt** | **1,6–2,7 GB** | **0,41** | **33,87** | **36,72** | **13,39** | **22,58** |
 
-**IndoBART-v2** dipilih karena ROUGE-nya setara mBART-50, tetapi 4,6× lebih kecil, memorinya 3× lebih hemat, dan 3× lebih cepat dilatih. Skor seleksi dihitung di set val, jadi tidak bisa dibandingkan langsung dengan tabel baseline (set test).
+**IndoBART-v2 dipilih** karena:
+- urutan kandidat sama di 2 dan 5 epoch (**IndoBART > mBART > T5 few-shot**), dan di 5 epoch IndoBART unggul di ketiga metrik;
+- 4,6× lebih kecil dari mBART-50, dengan VRAM sekitar 3× lebih hemat dan training sekitar 3× lebih cepat. Efisiensi ini memungkinkan training penuh dengan input 1.024 token di GPU T4;
+- lebih ringan untuk dijalankan di API.
 
-> Hasil akhir model fine-tuned di set test akan ditambahkan setelah Tahap 6–7 selesai.
+Val loss tidak dipakai untuk membandingkan antarmodel karena tokenizer tiap model berbeda (ringkasan yang sama menjadi 64 token di mBART dan 56 token di IndoBART).
+
+### 3. Fine-tuning penuh IndoBART-v2 (1.399 data train, ROUGE di 175 video val)
+
+Empat konfigurasi dilatih maksimal 10 epoch dengan **early stopping** (kesabaran 2 epoch).
+
+| Konfigurasi | Epoch terbaik | Val loss | ROUGE-1 | ROUGE-2 | ROUGE-L | Panjang | Waktu latih |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| input 512, lr 1e-4 | 4 | 2,72 | 39,04 | 15,32 | 24,52 | 73 kata | 10,4 menit |
+| input 512, lr 5e-5 | 5 | 2,64 | 40,60 | 15,87 | 25,03 | 82 kata | 12,9 menit |
+| input 1.024, lr 1e-4 | 4 | 2,65 | 40,13 | 15,93 | 25,16 | 79 kata | 13,2 menit |
+| **input 1.024, lr 5e-5** | 5 | **2,58** | **41,86** | **16,08** | **25,17** | 92 kata | 15,6 menit |
+
+Pengaturan panjang ringkasan saat generate, diuji pada konfigurasi terbaik:
+
+| Pengaturan | ROUGE-1 | ROUGE-2 | ROUGE-L | Presisi R-1 | Recall R-1 | Panjang |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| bawaan | 41,86 | 16,08 | **25,17** | **50,03** | 40,36 | 92 kata |
+| minimal 80 token | 42,59 | 16,01 | 25,08 | 47,76 | 43,11 | 100 kata |
+| minimal 120 token | **43,37** | 16,20 | 24,55 | 44,43 | **48,16** | 119 kata |
+| **`length_penalty` 2** | 43,35 | **16,42** | 25,08 | 46,16 | 46,06 | **116 kata** |
+
+**Model final:** IndoBART-v2, input 1.024 token, lr 5e-5, `length_penalty` 2.
+
+**Temuan utama:**
+- **Input 1.024 selalu lebih baik dari 512** pada learning rate yang sama, terutama di recall. Input 512 hanya membaca sekitar ⅓ transkrip, sedangkan 1.024 membaca sekitar ⅔.
+- **lr 5e-5 lebih stabil dari 1e-4.** Val loss-nya lebih rendah dan baru mulai naik setelah epoch 5.
+- **Overfitting muncul setelah epoch 4–5** (val loss naik lagi sementara train loss terus turun), dan early stopping menyimpan bobot di epoch terbaik.
+- **`length_penalty` 2 memberi keseimbangan presisi dan recall terbaik** (46 vs 46), dan panjangnya mendekati referensi. Memaksa panjang minimal 120 token menaikkan recall, tetapi menurunkan ROUGE-L karena model mengisi kalimat tambahan yang kurang relevan.
+- Train loss yang tercatat di log sekitar **5× lebih besar** dari loss asli di data train. Ini efek cara pencatatan loss dengan gradient accumulation, bukan tanda overfitting. Karena itu, overfitting dinilai dari kurva val loss.
+
+> Skor di atas dihitung di set **val**, tempat konfigurasi dipilih, sehingga cenderung sedikit optimis. Perbandingan resmi dengan baseline dilakukan di set **test** pada Tahap 7.
 
 ---
 
@@ -84,14 +192,15 @@ Zero-shot memakai `cahya/t5-base-indonesian-summarization-cased` (dilatih pada b
 
 ```
 .
-├── Deep_Learning_Peringkasan_Otomatis_Video_Kuliah_Bahasa_Indonesia.ipynb   # notebook utama (Tahap 1–5)
-├── tahap1_profiling_dan_uji_terjemahan.py   # versi skrip Tahap 1
-├── tahap2_cleaning_dan_split.py             # versi skrip Tahap 2
+├── Deep_Learning_Peringkasan_Otomatis_Video_Kuliah_Bahasa_Indonesia.ipynb   # notebook utama (Tahap 1–6)
+├── tahap1_profiling_dan_uji_terjemahan.py   # versi skrip awal Tahap 1
+├── tahap2_cleaning_dan_split.py             # versi skrip awal Tahap 2
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
-Notebook adalah acuan utama dan versi paling mutakhir dari seluruh pipeline.
+**Notebook adalah acuan utama** dan versi paling mutakhir dari seluruh pipeline. Skrip `.py` adalah versi awal dan tidak lagi diperbarui.
 
 ---
 
@@ -109,13 +218,28 @@ Notebook dirancang untuk **Google Colab dengan GPU T4**.
    Kalau memakai nama folder lain, ubah variabel `folder_utama` di cell pertama.
 3. Jalankan **Runtime → Run all**.
 
-Semua hasil antara disimpan ke `MyDrive/DEEP_LEARNING_test/tahap1` sampai `tahap5`.
+Semua hasil antara disimpan ke `MyDrive/DEEP_LEARNING_test/tahap1` sampai `tahap6`. Bobot model final tersimpan di `tahap6/model_in1024_lr5e-5`, dan pengaturan generate-nya di `tahap6/model_final.json`.
 
 ### Melanjutkan setelah sesi Colab terputus
 
-Cell **"Cek Hasil di Drive"** di awal notebook memeriksa file hasil tiap tahap. Proses berat (uji translasi, translasi NLLB, prediksi zero-shot) **tidak dijalankan ulang** bila hasilnya sudah ada di Drive, sedangkan translasi penuh dan seleksi model melanjutkan dari titik terakhir. Cukup **Run all** lagi.
+Cell **"Cek Hasil di Drive"** di awal notebook memeriksa file hasil setiap tahap. Cukup jalankan **Run all** lagi:
+
+| Proses | Perilaku saat dijalankan ulang |
+|---|---|
+| Uji translasi, prediksi zero-shot | dilewati bila hasilnya sudah ada |
+| Translasi penuh NLLB | dilanjutkan dari checkpoint terakhir (per 20 baris) |
+| Seleksi model (Tahap 5) | model yang sudah selesai dilewati |
+| Fine-tuning penuh (Tahap 6) | konfigurasi yang selesai dilewati, training yang terputus dilanjutkan dari checkpoint epoch terakhir |
 
 Untuk sengaja menjalankan ulang suatu proses, hapus file hasilnya di Drive, lalu jalankan ulang cell "Cek Hasil di Drive" dan cell proses tersebut.
+
+### Perkiraan waktu (GPU T4)
+
+| Proses | Waktu |
+|---|---|
+| Translasi penuh NLLB | ±1,5 jam |
+| Seleksi model (3 kandidat × 2 dan 5 epoch) | puluhan menit |
+| Fine-tuning penuh (4 konfigurasi) | ±52 menit training + waktu generate ringkasan |
 
 ### Instalasi lokal (opsional)
 
@@ -127,21 +251,28 @@ pip install -r requirements.txt
 
 ## Catatan Teknis
 
-- **Tokenizer IndoBART.** Tokenizer resmi (`IndoNLGTokenizer` dari paket `indobenchmark-toolkit`) tidak kompatibel dengan transformers 5.x. Notebook memakai kelas `TokenizerIndoBART` dengan format yang sama (teks huruf kecil, `<s> teks </s> [indonesian]`). Kelas ini diverifikasi menghasilkan `input_ids` dan `labels` identik dengan tokenizer resmi pada 525 teks.
+- **Tokenizer IndoBART.** Tokenizer resmi (`IndoNLGTokenizer` dari paket `indobenchmark-toolkit`) tidak kompatibel dengan transformers 5.x. Notebook memakai kelas `TokenizerIndoBART` dengan format yang sama (teks huruf kecil, `<s> teks </s> [indonesian]`). Kelas ini diverifikasi menghasilkan `input_ids` dan `labels` **identik** dengan tokenizer resmi pada 525 teks.
+- **Pengaturan training:** Seq2SeqTrainer, optimizer Adafactor, fp16 (kecuali T5), gradient checkpointing, batch 2 × gradient accumulation 4, target maksimal 512 token.
+- **Generate:** beam search 4, `no_repeat_ngram_size` 3, maksimal 384 token baru, `length_penalty` 2.
 - Keluaran IndoBART selalu **huruf kecil**, karena model dilatih pada teks huruf kecil.
 - Seed **42** dipakai untuk split dan sampling. Saat dijalankan ulang dari nol, seluruh angka Tahap 1–4 keluar identik.
 
+---
+
 ## Keterbatasan
 
-- Data latih adalah hasil **translasi mesin** dari bahasa Inggris, bukan transkrip asli berbahasa Indonesia, sehingga masih mengandung sebagian kesalahan istilah dan noise pengenalan suara dari transkrip sumber.
-- Dataset hanya menyediakan ringkasan per video, bukan per potongan transkrip.
-- Seleksi model memakai subset kecil (300 data × 2 epoch), sehingga selisih kecil antarmodel belum tentu signifikan.
+- Data latih adalah hasil **translasi mesin** dari bahasa Inggris, bukan transkrip asli berbahasa Indonesia, sehingga masih mengandung sebagian kesalahan istilah dan noise pengenalan suara dari transkrip sumber (misalnya *disulfide* tertulis "die-selfive").
+- Dataset hanya menyediakan ringkasan per video, bukan per potongan transkrip, sehingga model tidak pernah dilatih khusus untuk meringkas satu potongan (chunk).
+- Seleksi model memakai subset kecil (300 data, ROUGE pada 50 video), sehingga selisih kecil antarmodel belum tentu signifikan.
+- Model masih bisa menyalin kalimat pembuka transkrip dan sesekali menghasilkan pernyataan yang keliru secara fakta.
+- Keluaran model selalu huruf kecil.
 
 ---
 
 ## Rencana Berikutnya
 
-- [ ] Fine-tuning penuh IndoBART-v2 (input 512 vs 1.024 token, 2 nilai learning rate, early stopping)
-- [ ] Bobot model terbaik diunggah ke Google Drive (link akan ditambahkan di sini)
-- [ ] Evaluasi di set test + error analysis (konsep hilang, pengulangan, kalimat ambigu, halusinasi)
+- [ ] Evaluasi model final di set test: truncation vs chunk-and-summarize
+- [ ] Tabel final: 3 baseline vs model fine-tuned di set test yang sama
+- [ ] Error analysis: konsep hilang, pengulangan, kalimat ambigu, halusinasi, dan pengaruh panjang transkrip
 - [ ] REST API FastAPI: `POST /summarize` dengan chunking otomatis untuk teks panjang, validasi HTTP 422, diuji via Postman
+- [ ] Bobot model final diunggah ke Google Drive (link akan ditambahkan di sini)
