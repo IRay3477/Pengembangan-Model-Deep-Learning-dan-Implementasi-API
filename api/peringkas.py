@@ -67,10 +67,33 @@ def pecah_kalimat(teks):
     return [kalimat for kalimat in re.split(r'(?<=[.!?])\s+', str(teks).strip()) if kalimat]
 
 
+def pecah_kalimat_panjang(kalimat, tokenizer, batas_token):
+    # subtitle otomatis YouTube sering tanpa tanda baca, jadi satu "kalimat" bisa melebihi batas token;
+    # kalimat seperti itu dipotong per kata supaya tidak terbuang oleh truncation
+    potongan, kata_potongan, jumlah_token_potongan = [], [], 0
+    for kata in kalimat.split():
+        jumlah_token = len(tokenizer(kata, add_special_tokens=False)['input_ids'])
+        if kata_potongan and jumlah_token_potongan + jumlah_token > batas_token:
+            potongan.append(' '.join(kata_potongan))
+            kata_potongan, jumlah_token_potongan = [], 0
+        kata_potongan.append(kata)
+        jumlah_token_potongan += jumlah_token
+    if kata_potongan:
+        potongan.append(' '.join(kata_potongan))
+    return potongan
+
+
 def pecah_menjadi_chunk(teks, tokenizer, batas_token):
     # kalimat dikumpulkan sampai hampir batas token, jadi potongan tidak memotong di tengah kalimat
-    daftar_chunk, kalimat_chunk, jumlah_token_chunk = [], [], 0
+    daftar_kalimat = []
     for kalimat in pecah_kalimat(teks):
+        if len(tokenizer(kalimat, add_special_tokens=False)['input_ids']) > batas_token:
+            daftar_kalimat += pecah_kalimat_panjang(kalimat, tokenizer, batas_token)
+        else:
+            daftar_kalimat.append(kalimat)
+
+    daftar_chunk, kalimat_chunk, jumlah_token_chunk = [], [], 0
+    for kalimat in daftar_kalimat:
         jumlah_token = len(tokenizer(kalimat, add_special_tokens=False)['input_ids'])
         if kalimat_chunk and jumlah_token_chunk + jumlah_token > batas_token:
             daftar_chunk.append(' '.join(kalimat_chunk))

@@ -12,3 +12,5 @@ huggingface_hub
 fastapi
 uvicorn
 pydantic
+httpx
+youtube-transcript-api
