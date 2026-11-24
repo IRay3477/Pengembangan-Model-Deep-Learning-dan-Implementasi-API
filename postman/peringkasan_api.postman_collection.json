@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "API Peringkasan Transkrip Kuliah (Kelompok 6)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Uji POST /summarize: 2 request berhasil (200) dan 3 kasus validasi (422). Transkrip contoh diambil dari set test."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Cek status server",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "1. Transkrip pendek (1 chunk)",
+      "request": {
+        "method": "POST",
+        "description": "Transkrip ±430 kata, muat dalam 1 chunk.",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Jadi mari kita lihat contoh berikut di mana kita akan menggunakan hukum gas ideal untuk menghitung suhu sistem gas. Jadi mari kita mulai. Sebuah wadah tertentu dapat menahan perbedaan tekanan 1 ATM sebelum benar-benar runtuh. Sekarang awalnya kontainer diisi dengan gas ideal pada 20 derajat Celcius dan pada 2 ATM. Pada suhu berapa Anda bisa mendinginkan wadah sebelum benar-benar runtuh? Jadi mari kita mulai dengan melihat dua diagram kita. Jadi sistem nomor dua sebelum kita mendinginkan dan sistem nomor dua setelah kita mendinginkan wadah kita. Jadi kita ingin mendinginkan wadah sedemikian rupa sehingga suhu baru atau tekanan baru kita tidak melebihi 1 ATM. Jadi kita mulai dengan tekanan 2 ATM dan suhu 273 ditambah 20 atau 293 kalvin. Jadi kita mendinginkan kontainer kita ke tekanan 2 ATM dikurangi 1 ATM. Jadi tekanan baru P2 adalah 1 ATM dan suhu T2 adalah apa yang kita ingin menghitung. Jadi mari kita mulai dengan pertama melihat bahwa dua hal tetap konstan. Jumlah molekul dan oleh karena itu jumlah mol serta volume tetap konstan. Jadi jumlah mol gas kita dan volume wadah kita tetap konstan selama proses pendinginan. Jadi mari kita menerapkan hukum gas ideal. Produk tekanan dan volume sama dengan produk dari jumlah mol, konstan gas universal dan suhu. Perhatikan bahwa volume, jumlah mol dan konstan gas kita semua konstan. Jadi mari kita bawa konstan kita ke sisi kanan dan semua yang lain ke sisi kiri. Jadi kita memiliki hasil berikut. Perbandingan tekanan dengan suhu sama dengan dan dibagi dengan V. Sekarang seluruh rasio ini adalah konstan. Jadi itu berarti P dibagi dengan T juga konstan. Jadi rasio tekanan terhadap suhu dalam sistem 1 sama dengan rasio tekanan terhadap suhu dalam sistem 2. Dan itu persis di mana kita mendapatkan persamaan berikut. P1 dibagi T1 sama dengan P2 dibagi T2, di mana 1 adalah sistem 1 dan 2 adalah sistem 2. Jadi mari kita mengatur ulang persamaan kita dan memecahkan untuk suhu kita 2. Jadi ini adalah apa yang kita ingin menghitung. Jadi kita membawa ini ke sisi kiri, semua yang lain ke sisi kanan. Jadi suhu di sistem 2 sama dengan P2 kali T1 dibagi dengan P1. Jadi tekanan sistem 2 adalah 1 ATM. Jadi kita menghubungkan 1 ATM. Suhu sistem 1 dan Calvin adalah 273 ditambah 20, jadi 293 Calvin. Sekarang tekanan sistem 1 kita diberikan menjadi 2 ATM. Jadi kita memiliki 1 ATM dibagi 2 ATM, jadi itu hanya 0.5 dikalikan dengan 293 Calvin. Dan itu memberi kita 146.5 Calvin. Jadi suhu akhir dari sistem nomor 2 tepat sebelum wadah kita runtuh adalah 146,5 Calvin atau setara negatif 126,5 derajat Celcius.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/summarize",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "summarize"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Transkrip panjang (chunk-and-summarize)",
+      "request": {
+        "method": "POST",
+        "description": "Transkrip ±1.500 kata, dipecah menjadi beberapa chunk.",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Dengan cara yang sama seperti mata manusia mampu menangkap cahaya dan mengubah cahaya menjadi sinyal listrik, otak menggunakan untuk menciptakan gambar lingkungan kita. Telinga manusia menggunakan gelombang mekanik, gelombang tekanan di udara untuk mengubahnya menjadi sinyal listrik dan kemudian otak menggunakan sinyal listrik untuk menciptakan suara. Dan itulah mengapa gelombang mekanik ini juga dikenal sebagai gelombang suara. Jadi mari kita bahas bagaimana gelombang mekanik benar-benar menyebar melalui telinga. Mari kita bahas struktur telinga dan bagaimana telinga mengubah gelombang mekanik menjadi sinyal listrik. Jadi telinga bisa di umumkan, bisa dipecah menjadi tiga bagian. Kita punya telinga luar, kita punya telinga tengah dan kita punya telinga dalam. Sekarang mari kita mulai dengan telinga luar. Telinga luar pada dasarnya berisi bagian yang dikenal sebagai pinna atau orakel. Jadi seluruh bagian ini termasuk lobus telinga kita dikenal sebagai pinna kita. Sekarang pinna apa yang pada dasarnya ia lakukan adalah ia menangkap dengan baik energi yang dibawa oleh gelombang mekanik kita dan mengarahkan gelombang mekanik ke saluran telinga. Dan karena pinna memiliki luas permukaan yang sangat besar pada dasarnya bertindak untuk memperkuat kekuatan yang gelombang tekanan kita benar-benar menciptakan. Jadi telinga manusia dapat mendeteksi variasi tekanan udara yang dikenal sebagai gelombang mekanik. Pinna juga dikenal sebagai orakel bertindak untuk menangkap banyak energi gelombang mekanik dan mentransmisikan. Energi itu gelombang mekanik melalui saluran telinga yang pada dasarnya bagian ini di sini. Jadi saluran telinga juga merupakan bagian dari bagian luar telinga. Gelombang mekanik kemudian bergerak di sepanjang saluran telinga dan menuju ujung saluran telinga kita dan di akhir saluran telinga kita memiliki awal telinga tengah. Jadi kita memiliki gelombang mekanik yang menyebar semacam gangguan di udara memulai gelombang propagasi ini, gelombang mekanik kita. Ia akhirnya ditangkap oleh pinna telinga dan mengarah ke saluran telinga. Dan kita memiliki proses amplifikasi ini terjadi. Pinna telinga memperkuat gelombang sekitar dua kali lipat. Sekarang ketika gelombang mekanik kita melintasi wilayah ini melalui saluran telinga di dalam saluran telinga kita memiliki banyak molekul udara. Dan ketika molekul udara ini bergetar ke depan dan ke belakang mereka akhirnya menyebabkan drum telinga yang juga dikenal sebagai membran tempanik kita yang pada dasarnya adalah membran pedang. Getaran molekul udara di dalam telinga yang menyebabkan membran kita, drum telinga bergetar juga. Jadi di ujung saluran telinga gelombang mekanis memukul dan bergetar drum telinga, membran tempanik kita. Sekarang perhatikan bahwa area drum telinga jauh lebih kecil dari area pinna yang menutupi luar telinga kita. Sekarang kita tahu dari fisika bahwa tekanan di luar telinga sama persis dengan tekanan di dalam wilayah ini. Tapi apa yang berbeda adalah area kita karena area di dalam drum telinga kita, area drum telinga jauh lebih kecil dari area pinna yang berarti karena kekuatan, tekanan adalah sama, kekuatan kita jauh lebih besar pada drum telinga daripada di luar telinga. Jadi kita memiliki keuntungan mekanis. Jadi konsep ini dalam fisika dikenal sebagai keuntungan mekanis. Jadi tidak hanya pinna benar-benar memperkuat gelombang itu, drum telinga juga memperkuat gelombang dengan meningkatkan kekuatan yang dirasakan pada membran sebagai akibat dari gelombang mekanis itu. Sekarang drum telinga ini terhubung langsung ke tulang yang dikenal sebagai malia. Jadi di bagian tengah telinga, kita memiliki drum telinga dan kita memiliki tiga tulang ini yang secara kolektif dikenal sebagai tulang. Jadi kita punya malias, kita punya incus dan kita punya stapes. Sekarang setiap tulang ini lebih kecil dari yang lain. Ini memiliki lengan tuas yang lebih kecil. Jadi pada dasarnya tiga tulang ini bertindak sebagai sistem tuas. Dan ketika kekuatan ditransmisikan dari malias ke incus ke stapes kita, kekuatan kita meningkat sebagai akibat dari penurunan lengan tuas penurunan dalam pergeseran kita. Dan itu berarti kita juga memiliki proses amplifikasi yang terjadi dalam sistem tuas ini. Dan kekuatan yang diciptakan oleh gelombang tekanan meningkat saat kita berjalan di sepanjang tiga tulang ini. Jadi kita memiliki amplifikasi yang terjadi di pinna. Kami memiliki amplifikasi yang terjadi pada drum telinga dan kami memiliki amplifikasi yang terjadi pada tiga tulang di tiga tulang ini. Pertanyaannya adalah mengapa tepatnya kita ingin amplifikasi ini mengambil di tempat pertama? Jadi ingat dari fisika, setiap kali gelombang mekanik menyebar melalui udara dan kemudian memukul, semacam batas cair, ada sejumlah besar rintangan yang ada di batas itu. Dan untuk benar-benar mentransmisikan gelombang mekanik dari udara ke cairan, kita harus memperkuat kekuatan kita. Jadi pada dasarnya di bagian dalam telinga, kita tidak lagi memiliki udara, kita memiliki jenis cairan, cairan jenis yang dikenal sebagai pyrulim. Dan di batas cairan udara ini, kita memiliki sejumlah besar daya tahan terhadap gelombang mekanik dan untuk mengatasi daya tahan ini, kita harus memperkuat kekuatan kita. Dan itulah tepatnya kita memperkuat kekuatan di pinna. Kemudian kita memperkuat kekuatan pada drum telinga dan kita memperkuat kekuatan pada tiga tulang kita, mali adalah incus dan stapes. Sekarang di pinna, kita memperkuat sekitar kali dua. Pada drum telinga, kita memperkuat sekitar lima belas kali. Dan pada tiga tulang ini, kita memperkuat sekitar tiga kali lipat. Jadi bersama-sama, kita memperkuat dua kali lima belas kali tiga. Jadi sekitar sembilan puluh kali lebih banyak. Dan itu setara dengan sekitar dua puluh desibel. Jadi sekarang mari kita beralih ke bagian dalam telinga kita. Jadi pegangan terhubung ke membran lain yang merupakan bagian dari telinga bagian dalam yang dikenal sebagai jendela oval kita. Membran yang terhubung ke tulang stapes ini dikenal sebagai jendela oval. Jadi ketika tekanan, gelombang tekanan memukul drum telinga, itu menyebabkan setiap tulang ini secara mendasar bergetar dan getaran pegangan menerapkan kekuatan pada jendela oval dan itu menyebabkan jendela membran itu secara mendasar bergetar dan bergerak ke depan dan ke belakang. Dan saat itu bergetar, itu menyebabkan cairan di dalam pada dasarnya bergetar ke depan. Ini memulai gelombang mekanik di dalam cairan kita yang dikenal sebagai paryllumph di dalam daerah koclea ini. Jadi seluruh wilayah spiral ini dikenal sebagai koklea. Dan ketika gelombang tekanan bergerak ke dalam koklea, itu melompat dan bergerak kembali akhirnya memukul jendela bulat. Jendela bulat adalah membran kedua di dalam koklea kita yang pada dasarnya membantu penyebaran dan penciptaan gelombang mekanis itu. Jadi ingatlah bahwa salah satu perbedaan utama antara udara dan cairan adalah bahwa cairan tidak mudah dikompres. Jadi di dalam daerah koclea ini, jika kita tidak memiliki membran ini, gelombang tekanan tidak akan dapat bergerak karena kita tidak akan dapat memampatkan punggung cair karena jendela bulat yang bergetar dan karena jendela oval yang bergetar, kita pada dasarnya memiliki gelombang mekanis yang menyebar di dalam koclea. Jadi jika jendela bulat atau jika jendela oval menjadi kaku, yang berarti tidak akan bergetar sebanyak itu, itu berarti gelombang kita di dalam tidak akan kuat dan itu berarti kita tidak akan bisa mendengar juga. Jadi alasan kita bisa mendengar dengan baik adalah karena membran ini fleksibel dan mereka mampu berotot dan bergerak ke depan dan ke belakang. Jadi ketika gelombang tekanan dibawa melalui koclea kita, di dalam koclea, kita memiliki daerah yang dikenal sebagai organ corti. Dan di organ corti, kita pada dasarnya memiliki jenis khusus sel sensorik yang dikenal sebagai sel rambut. Dan sel-sel rambut ini mengandung ekstensi yang dikenal sebagai microvili dan ekstensi microvili ini pada dasarnya mampu menerima gelombang tekanan ini dan sebagai akibat dari getaran dari microvili, mereka pada dasarnya depolarisasi membran sel-sel rambut. Dan ketika sel-sel rambut depolarisasi, mereka menciptakan potensi aksi dan sinyal listrik yang pada dasarnya perjalanan melalui koklea, saraf dan ke otak. Jadi di dalam telinga bagian dalam, gelombang mekanis ditransmisikan ke cairan telinga bagian dalam melalui jendela oval, membran, yang pada dasarnya terhubung ke stapes yang mulai bergetar. Saat bergetar, ia mengirim gelombang tekanan kita yang akhirnya bergetar jendela bulat kita juga ditemukan di wilayah ini tepat di bawah jendela oval kita. Sekarang, variasi tekanan dalam cairan ini menyebabkan sel rambut untuk depolarisasi dan potensi aksi perjalanan melalui koklea, saraf dan sampai ke otak kita. Jadi anggaplah ini adalah sel rambut yang ditemukan di dalam organ corti, ditemukan di dalam koklea. Dan ketika gelombang tekanan memukul, sel-sel rambut ini, microvili, ekstensi ini, rambut seperti ekstensi, pada dasarnya bergetar dan mereka menyebabkan depolarisasi membran sel dan ini memulai potensi aksi yang kemudian perjalanan melalui exon ini, melalui koklea, saraf dan akhirnya ke otak. Sekarang, hal terakhir yang ingin saya bicarakan adalah sesuatu yang disebut saluran semiserkular. Jadi di dalam seseorang, di dalam setiap telinga, kita pada dasarnya memiliki tiga saluran semiserkular dan masing-masing dari tiga saluran semiserkular ini pada dasarnya terletak di sepanjang tiga sumbu yang berbeda di sepanjang sumbu x, y dan z. Jadi saluran semiserkular, seperti koklea, mengandung cairan sendiri dan cairan dalam saluran semiserkular dikenal sebagai endolimp kita. Endolimp kita. Jadi karena cairan ini mengalami variasi tekanan kita, gelombang mekanik, ini menyebabkan sel rambut khusus yang ditemukan di dalam saluran semiserkular. Jadi kita melihat bahwa kita tidak hanya memiliki sel-sel rambut di dalam koklea, kita juga memiliki sel-sel rambut di dalam saluran semiserkular, tetapi sel-sel rambut ini sedikit berbeda. Jadi pada dasarnya sel-sel rambut ini depolarisasi dan mereka mengirim potensi aksi, sinyal melalui sarafnya sendiri yang dikenal sebagai saraf vestibular dan ini pada dasarnya terhubung dengan saraf koklea untuk membentuk saraf ini yang kemudian pergi ke otak dan otak pada dasarnya menganalisis dan menciptakan suara yang kita dengar. Sekarang ada tiga saluran semiserkular dan mereka membantu kita dengan keseimbangan dan memungkinkan kita untuk benar-benar mendeteksi percepatan serta perlambatan.\",\n  \"strategi\": \"chunk\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/summarize",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "summarize"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Error 422: teks terlalu pendek",
+      "request": {
+        "method": "POST",
+        "description": "Kurang dari 30 kata.",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Hari ini kita belajar hukum Newton.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/summarize",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "summarize"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Error 422: field text tidak ada",
+      "request": {
+        "method": "POST",
+        "description": "Body tanpa text.",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"strategi\": \"chunk\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/summarize",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "summarize"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Error 422: strategi tidak dikenal",
+      "request": {
+        "method": "POST",
+        "description": "Strategi hanya 'chunk' atau 'truncation'.",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Jadi mari kita lihat contoh berikut di mana kita akan menggunakan hukum gas ideal untuk menghitung suhu sistem gas. Jadi mari kita mulai. Sebuah wadah tertentu dapat menahan perbedaan tekanan 1 ATM sebelum benar-benar runtuh. Sekarang awalnya kontainer diisi dengan gas ideal pada 20 derajat Celcius dan pada 2 ATM. Pada suhu berapa Anda bisa mendinginkan wadah sebelum benar-benar runtuh? Jadi mari kita mulai dengan melihat dua diagram kita. Jadi sistem nomor dua sebelum kita mendinginkan dan sistem nomor dua setelah kita mendinginkan wadah kita. Jadi kita ingin mendinginkan wadah sedemikian rupa sehingga suhu baru atau tekanan baru kita tidak melebihi 1 ATM. Jadi kita mulai dengan tekanan 2 ATM dan suhu 273 ditambah 20 atau 293 kalvin. Jadi kita mendinginkan kontainer kita ke tekanan 2 ATM dikurangi 1 ATM. Jadi tekanan baru P2 adalah 1 ATM dan suhu T2 adalah apa yang kita ingin menghitung. Jadi mari kita mulai dengan pertama melihat bahwa dua hal tetap konstan. Jumlah molekul dan oleh karena itu jumlah mol serta volume tetap konstan. Jadi jumlah mol gas kita dan volume wadah kita tetap konstan selama proses pendinginan. Jadi mari kita menerapkan hukum gas ideal. Produk tekanan dan volume sama dengan produk dari jumlah mol, konstan gas universal dan suhu. Perhatikan bahwa volume, jumlah mol dan konstan gas kita semua konstan. Jadi mari kita bawa konstan kita ke sisi kanan dan semua yang lain ke sisi kiri. Jadi kita memiliki hasil berikut. Perbandingan tekanan dengan suhu sama dengan dan dibagi dengan V. Sekarang seluruh rasio ini adalah konstan. Jadi itu berarti P dibagi dengan T juga konstan. Jadi rasio tekanan terhadap suhu dalam sistem 1 sama dengan rasio tekanan terhadap suhu dalam sistem 2. Dan itu persis di mana kita mendapatkan persamaan berikut. P1 dibagi T1 sama dengan P2 dibagi T2, di mana 1 adalah sistem 1 dan 2 adalah sistem 2. Jadi mari kita mengatur ulang persamaan kita dan memecahkan untuk suhu kita 2. Jadi ini adalah apa yang kita ingin menghitung. Jadi kita membawa ini ke sisi kiri, semua yang lain ke sisi kanan. Jadi suhu di sistem 2 sama dengan P2 kali T1 dibagi dengan P1. Jadi tekanan sistem 2 adalah 1 ATM. Jadi kita menghubungkan 1 ATM. Suhu sistem 1 dan Calvin adalah 273 ditambah 20, jadi 293 Calvin. Sekarang tekanan sistem 1 kita diberikan menjadi 2 ATM. Jadi kita memiliki 1 ATM dibagi 2 ATM, jadi itu hanya 0.5 dikalikan dengan 293 Calvin. Dan itu memberi kita 146.5 Calvin. Jadi suhu akhir dari sistem nomor 2 tepat sebelum wadah kita runtuh adalah 146,5 Calvin atau setara negatif 126,5 derajat Celcius.\",\n  \"strategi\": \"abstrak\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/summarize",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "summarize"
+          ]
+        }
+      }
+    }
+  ]
+}

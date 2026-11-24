@@ -6,3 +6,9 @@ scikit-learn
 pandas
 matplotlib
 rouge-score
+networkx
+accelerate
+huggingface_hub
+fastapi
+uvicorn
+pydantic

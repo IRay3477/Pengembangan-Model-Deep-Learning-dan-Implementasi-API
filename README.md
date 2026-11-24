@@ -26,6 +26,7 @@ Tugas 2 Mata Kuliah **Deep Learning**, Program Studi Teknologi Informasi, Univer
 - [Hasil](#hasil)
 - [Struktur Repository](#struktur-repository)
 - [Cara Menjalankan](#cara-menjalankan)
+- [Menjalankan API](#menjalankan-api)
 - [Catatan Teknis](#catatan-teknis)
 - [Keterbatasan](#keterbatasan)
 - [Rencana Berikutnya](#rencana-berikutnya)
@@ -43,7 +44,7 @@ Tugas 2 Mata Kuliah **Deep Learning**, Program Studi Teknologi Informasi, Univer
 | **Input panjang** | Truncation vs chunk-and-summarize |
 | **Deployment** | FastAPI `POST /summarize`, diuji dengan Postman |
 
-**Hasil sementara (set val, 175 video):** model final mencapai **ROUGE-1 43,35 / ROUGE-2 16,42 / ROUGE-L 25,08** dengan panjang ringkasan ±116 kata (referensi ±121 kata). Skor resmi di set test menyusul di Tahap 7.
+**Hasil akhir (set test, 175 video):** model final (truncation) mencapai **ROUGE-1 43,67 / ROUGE-2 16,89 / ROUGE-L 24,64**, mengalahkan baseline terkuat Lead-7 (37,66 / 13,52 / 21,79) di ketiga metrik, dengan panjang ringkasan ±130 kata (referensi ±124 kata).
 
 ---
 
@@ -57,8 +58,8 @@ Tugas 2 Mata Kuliah **Deep Learning**, Program Studi Teknologi Informasi, Univer
 | 4 | Evaluasi ROUGE + 3 baseline + truncation vs chunk-and-summarize | ✅ |
 | 5 | Seleksi model utama (T5-base few-shot, mBART-50, IndoBART-v2) | ✅ → **IndoBART-v2** |
 | 6 | Fine-tuning penuh IndoBART-v2 (4 konfigurasi + pengaturan panjang ringkasan) | ✅ |
-| 7 | Evaluasi akhir di set test + error analysis | ⏳ Berikutnya |
-| 8 | REST API FastAPI (`POST /summarize`) + uji Postman | ⏳ Rencana |
+| 7 | Evaluasi akhir di set test + error analysis | ✅ |
+| 8 | REST API FastAPI (`POST /summarize`) + uji Postman | ✅ |
 | 9 | Laporan, slide, dan rilis bobot model | ⏳ Rencana |
 
 ---
@@ -192,7 +193,13 @@ Pengaturan panjang ringkasan saat generate, diuji pada konfigurasi terbaik:
 
 ```
 .
-├── Deep_Learning_Peringkasan_Otomatis_Video_Kuliah_Bahasa_Indonesia.ipynb   # notebook utama (Tahap 1–6)
+├── Deep_Learning_Peringkasan_Otomatis_Video_Kuliah_Bahasa_Indonesia.ipynb   # notebook utama (Tahap 1–7)
+├── api/
+│   ├── main.py        # FastAPI: GET / dan POST /summarize
+│   └── peringkas.py   # tokenizer, chunking, dan generate (sama dengan notebook)
+├── postman/
+│   └── peringkasan_api.postman_collection.json   # 2 request berhasil + 3 kasus error 422
+├── model/             # bobot model final, diunduh dari Google Drive (tidak di-push)
 ├── tahap1_profiling_dan_uji_terjemahan.py   # versi skrip awal Tahap 1
 ├── tahap2_cleaning_dan_split.py             # versi skrip awal Tahap 2
 ├── requirements.txt
@@ -249,6 +256,85 @@ pip install -r requirements.txt
 
 ---
 
+## Menjalankan API
+
+API memakai model final Tahap 6 (IndoBART-v2, input 1.024 token, `length_penalty` 2). Model dimuat **sekali** saat server dinyalakan, lalu dipakai untuk setiap request.
+
+### 1. Siapkan bobot model
+
+Unduh isi folder `tahap6/model_in1024_lr5e-5` dari Google Drive (`config.json`, `generation_config.json`, `model.safetensors`), ditambah `tahap6/model_final.json`, lalu taruh di folder `model/`:
+
+```
+model/
+├── config.json
+├── generation_config.json
+├── model.safetensors
+└── model_final.json
+```
+
+Link bobot model: *(menyusul)*
+
+Folder `model/` tidak ikut di-push (lihat `.gitignore`) karena ukurannya ±526 MB. Tokenizer `sentencepiece.bpe.model` diunduh otomatis dari Hugging Face saat pertama kali server dijalankan.
+
+### 2. Nyalakan server
+
+Dari folder utama repo:
+
+```bash
+pip install -r requirements.txt
+uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+Kalau model disimpan di folder lain, atur variabel lingkungan `MODEL_PATH` (misalnya `set MODEL_PATH=D:\model_final` di Windows) sebelum menjalankan `uvicorn`.
+
+Dokumentasi interaktif tersedia di `http://127.0.0.1:8000/docs`.
+
+### 3. Endpoint
+
+| Method | Path | Fungsi |
+|---|---|---|
+| `GET` | `/` | Cek status server, device (CPU/GPU), dan pengaturan generate |
+| `POST` | `/summarize` | Meringkas transkrip |
+
+**Request `POST /summarize`:**
+
+```json
+{
+  "text": "Jadi mari kita lihat contoh berikut ... (minimal 30 kata)",
+  "strategi": "chunk"
+}
+```
+
+| Field | Wajib | Keterangan |
+|---|---|---|
+| `text` | ya | Transkrip berbahasa Indonesia, 30–20.000 kata |
+| `strategi` | tidak | `chunk` (bawaan): transkrip dipecah per ±1.024 token, tiap potongan diringkas, lalu gabungannya diringkas lagi. `truncation`: hanya 1.024 token pertama yang dibaca |
+
+**Respons (200), contoh format:**
+
+```json
+{
+  "summary": "Ringkasan hasil model ...",
+  "strategi": "chunk",
+  "n_chunks": 2,
+  "jumlah_kata_input": 1523,
+  "jumlah_kata_ringkasan": 131,
+  "waktu_detik": 41.3
+}
+```
+
+**Validasi (422):** `text` tidak dikirim, teks kurang dari 30 kata atau lebih dari 20.000 kata, atau `strategi` selain `chunk`/`truncation`.
+
+Strategi bawaan API adalah `chunk`. Untuk transkrip yang muat dalam satu potongan, hasilnya sama persis dengan `truncation`, sedangkan transkrip yang sangat panjang tetap terbaca seluruhnya.
+
+### 4. Uji dengan Postman
+
+Import `postman/peringkasan_api.postman_collection.json` ke Postman. Koleksi ini berisi cek status, 2 request berhasil (transkrip pendek 1 chunk dan transkrip panjang 2 chunk dari set test), dan 3 kasus error 422.
+
+Di CPU laptop, satu ringkasan butuh ±20–90 detik tergantung panjang transkrip. Dengan GPU jauh lebih cepat.
+
+---
+
 ## Catatan Teknis
 
 - **Tokenizer IndoBART.** Tokenizer resmi (`IndoNLGTokenizer` dari paket `indobenchmark-toolkit`) tidak kompatibel dengan transformers 5.x. Notebook memakai kelas `TokenizerIndoBART` dengan format yang sama (teks huruf kecil, `<s> teks </s> [indonesian]`). Kelas ini diverifikasi menghasilkan `input_ids` dan `labels` **identik** dengan tokenizer resmi pada 525 teks.
@@ -271,8 +357,9 @@ pip install -r requirements.txt
 
 ## Rencana Berikutnya
 
-- [ ] Evaluasi model final di set test: truncation vs chunk-and-summarize
-- [ ] Tabel final: 3 baseline vs model fine-tuned di set test yang sama
-- [ ] Error analysis: konsep hilang, pengulangan, kalimat ambigu, halusinasi, dan pengaruh panjang transkrip
-- [ ] REST API FastAPI: `POST /summarize` dengan chunking otomatis untuk teks panjang, validasi HTTP 422, diuji via Postman
-- [ ] Bobot model final diunggah ke Google Drive (link akan ditambahkan di sini)
+- [x] Evaluasi model final di set test: truncation vs chunk-and-summarize
+- [x] Tabel final: 3 baseline vs model fine-tuned di set test yang sama
+- [x] Error analysis: konsep hilang, pengulangan, kalimat ambigu, halusinasi, dan pengaruh panjang transkrip
+- [x] REST API FastAPI: `POST /summarize` dengan chunking otomatis untuk teks panjang, validasi HTTP 422, diuji via Postman
+- [ ] Bobot model final dibagikan lewat Google Drive (link ditambahkan di bagian [Menjalankan API](#menjalankan-api))
+- [ ] Laporan dan slide presentasi akhir

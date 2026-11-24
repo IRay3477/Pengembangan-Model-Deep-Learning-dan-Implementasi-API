@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 venv/
+.venv/
 env/
 
 # Data & checkpoints (jangan di-push karena melebihi batas 100 MB)
@@ -16,3 +17,5 @@ checkpoints/
 # Output gambar / cache Colab
 *.png
 .ipynb_checkpoints/
+# Bobot model hasil fine-tuning (unduh dari Google Drive, lihat README)
+model/
